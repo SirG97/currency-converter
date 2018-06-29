@@ -16,24 +16,29 @@
         </header>
     </div>
     <div class="w3-container w3-center">
-        <div class="w3-row w3-row-padding row-padding">
-            <div class="w3-half">
-                <label class="w3-left">Currency I have</label>
-                <select class="w3-select w3-border" id="currency-from" name="option" style="margin:15px 0">
 
-                </select>
-                <input class="w3-input w3-border w3-round" type="text">
+          <div class="w3-card-4">
+            <div class="w3-row w3-row-padding ">
+              <input class="w3-input w3-border w3-round" id="amount" type="text">
+                <div class="w3-half">
+                    <label class="w3-left">Convert from</label>
+                    <select class="w3-select w3-border" id="currency-from" name="option" style="margin:15px 0">
+
+                    </select>
+
+                </div>
+
+                <div class="w3-half">
+                    <label class="w3-left">Convert to</label>
+                    <select class="w3-select w3-border" id="currency-to" name="option" style="margin:15px 0;">
+
+                    </select>
+
+                </div>
+            <button class="w3-btn w3-green w3-round w3-large w3-margin" id="convert">Convert</button>
             </div>
-
-            <div class="w3-half">
-                <label class="w3-left">Currency I want</label>
-                <select class="w3-select w3-border" id="currency-to" name="option" style="margin:15px 0;">
-
-                </select>
-                <input class="w3-input w3-border w3-round" type="text">
-            </div>
-        <button class="w3-btn w3-green w3-round w3-large w3-margin">Convert</button>
-        </div>
+            <div id="output"></div>
+     </div>
     </div>
 <script src="js/app.js"></script>
 </body>
