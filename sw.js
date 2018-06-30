@@ -1,7 +1,8 @@
+ const cacheName = 'currency-converter-v1'
 self.addEventListener('install', event => {
     console.log('Installing service working...');
     event.waitUntil(
-        caches.open('currency-converter-v1').then(cache => {
+        caches.open(cacheName).then(cache => {
             return cache.addAll([
                 '/currency-converter/',
                 '/currency-converter/index.html',
@@ -31,8 +32,11 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request).then( response => {
             return response || fetch(event.request).then(response => {
-                cache.put(event.request, response.clone());
-                return response;
+                cache.open(cacheName).then(cache => {
+                    cache.put(event.request, response.clone());
+                    return response;
+                })
+ 
             });
         })
     );
