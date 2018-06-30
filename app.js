@@ -1,16 +1,20 @@
 //Register your service worker as early as possible
-window.onload = () => {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/currency-converter/sw.js')
+        navigator.serviceWorker.register('/currency-converter/sw.js', {scope: '/currency-converter/'})
         .then(function(reg) {
-          // registration worked
-          console.log('Registration succeed');
+            if(reg.installing) {
+                console.log('Service worker installing');
+              } else if(reg.waiting) {
+                console.log('Service worker installed');
+              } else if(reg.active) {
+                console.log('Service worker active');
+              }
         }).catch(function(error) {
           // registration failed
           console.log('Registration failed with ' + error);
         });
       }
-}
+
 
 const currencies_url = 'https://free.currencyconverterapi.com/api/v5/currencies';
 fetch(currencies_url).then(response =>{
