@@ -1,3 +1,21 @@
+//Register your service worker as early as possible
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/currency-converter/sw.js', {scope: '/currency-converter/'})
+        .then(function(reg) {
+            if(reg.installing) {
+                console.log('Service worker installing');
+              } else if(reg.waiting) {
+                console.log('Service worker installed');
+              } else if(reg.active) {
+                console.log('Service worker active');
+              }
+        }).catch(function(error) {
+          // registration failed
+          console.log('Registration failed with ' + error);
+        });
+      }
+
+
 const currencies_url = 'https://free.currencyconverterapi.com/api/v5/currencies';
 fetch(currencies_url).then(response =>{
         if(response.status !== 200){
@@ -28,15 +46,24 @@ fetch(currencies_url).then(response =>{
     //function to convert the currencyTo
     let convertCurrency = (amount, convertFrom, convertTo) => {
       const query = `${convertFrom}_${convertTo}`;
-      const exchangeRate = `https://free.currencyconverterapi.com/api/v5/convert?q=${query}&compact=ultra`;
-      console.log(exchangeRate);
-      fetch(exchangeRate).then(
-        response => response.json()).then(convert => {
-          let convertionRate = `convert.${query}`;
-          console.log(conversionRate);
+      const exchangeRateUrl = `https://free.currencyconverterapi.com/api/v5/convert?q=${query}&compact=ultra`;
+      console.log(exchangeRateUrl);
+      fetch(exchangeRateUrl).then(
+        response => response.json()).then(exchangeRates => {
+    
+          for (const exchangeRate in exchangeRates) {
+              if (exchangeRates.hasOwnProperty(`${query}`)) {
+                  const rate = exchangeRates[exchangeRate];
+                  console.log(rate);
+                  amount = rate * amount;
+                  let output = amount.toFixed(2);
+                  document.getElementById('output').innerHTML = `${output} ${convertTo}`;
+                  convertButton.innerHTML = 'Convert';
+                  convertButton.disabled = false;
+              }
+          }
 
-          amount = `${conversionRate * amount} ${convertTo}`;
-          document.getElementById('output').innerHTML = amount
+        
 
         }).catch(error =>
             console.log('Something is wrong with this api call')
@@ -45,9 +72,11 @@ fetch(currencies_url).then(response =>{
 
     let convertButton = document.getElementById('convert');
     convertButton.addEventListener('click',() => {
+        convertButton.innerHTML = 'Converting....';
+        convertButton.disabled = true;
         let amount = document.getElementById('amount').value;
         let convertFrom = document.getElementById('currency-from').value;
         let convertTo = document.getElementById('currency-to').value;
         convertCurrency(amount, convertFrom, convertTo);
-        console.log('I\'ve been converted');
+        console.log('I\'ve been clicked');
       });
