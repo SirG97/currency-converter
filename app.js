@@ -1,3 +1,17 @@
+//Register your service worker as early as possible
+window.onload = () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/currency-converter/sw.js')
+        .then(function(reg) {
+          // registration worked
+          console.log('Registration succeed');
+        }).catch(function(error) {
+          // registration failed
+          console.log('Registration failed with ' + error);
+        });
+      }
+}
+
 const currencies_url = 'https://free.currencyconverterapi.com/api/v5/currencies';
 fetch(currencies_url).then(response =>{
         if(response.status !== 200){
