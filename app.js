@@ -3,44 +3,55 @@
         navigator.serviceWorker.register('/currency-converter/sw.js', {scope: '/currency-converter/'})
         .then(function(reg) {
             if(reg.installing) {
-                console.log('Service worker installing');
+                console.log('Service worker installing for the first time...');
+                
+                const dbPromise = idb.open('currency-list', 1, upgradeDB => {
+                    upgradeDB.createObjectStore('currencies', { keyPath: 'currencyName' });
+                    upgradeDB.createObjectStore('exchange_rates', { keyPath: 'pair' });
+                });
+                const currencies_url = 'https://free.currencyconverterapi.com/api/v5/currencies';
+                fetch(currencies_url).then(response =>{
+                    if(response.status !== 200){
+                        console.log("something is wron with the request"+ response.status);
+                        return;
+                    }
+                    response.json().then(currencies =>{
+                        console.log(currencies);
+                        listCurrencies(Object.values(currencies.results));
+                        dbPromise.then(dbObj => {
+                            const tx = dbObj.transaction('currencies', 'readwrite');
+                            Object.values(currencies.results).map( currency => {
+                                tx.objectStore('currencies').put(currency);
+                            });
+                        });
+               
+            
+                    })
+                }).catch(function(err){
+                    console.log(err);
+                }); 
+
               } else if(reg.waiting) {
+                 // If there's a waiting worker, bypass network Fetch currency list from IndexedDB
                 console.log('Service worker installed');
+                return dbPromise.then(db => {
+                    return db.transaction('currencies').objectStore('currencies').getAll();
+                    
+                })
+                .then(allCurrencies => {
+                    listCurrencies(allCurrencies);
+                    return allCurrencies;
+                });
+
               } else if(reg.active) {
                 console.log('Service worker active');
+
               }
         }).catch(function(error) {
           // registration failed
           console.log('Registration failed with ' + error);
         });
       }
-
-
-const currencies_url = 'https://free.currencyconverterapi.com/api/v5/currencies';
-fetch(currencies_url).then(response =>{
-        if(response.status !== 200){
-            console.log("something is wron with the request"+ response.status);
-            return;
-        }
-        response.json().then(currencies =>{
-            console.log(currencies);
-             let currencyFrom = document.getElementById('currency-from');
-             let currencyTo = document.getElementById('currency-to');
-            for (const currency in currencies) {
-                for (const id in currencies[currency]) {
-                  currencyFrom.innerHTML += `<option value="${currencies[currency][id].id}"> ${currencies[currency][id].id} - ${currencies[currency][id].currencyName}`;
-                  currencyTo.innerHTML += `<option value="${currencies[currency][id].id}"> ${currencies[currency][id].id} - ${currencies[currency][id].currencyName}`;
-                }
-
-            }
-
-        })
-    }).catch(function(err){
-        console.log(err);
-    });
-
-    //get the amount and selected currency and store in a variable
-    //call the convert currency function with it
 
 
     //function to convert the currencyTo
@@ -80,3 +91,27 @@ fetch(currencies_url).then(response =>{
         convertCurrency(amount, convertFrom, convertTo);
         console.log('I\'ve been clicked');
       });
+
+
+let listCurrencies = (currencies) => {
+    const sortedCurrencies = Array.from(currencies).sort((prev, next) => {
+        if(prev.currencyName < next.currencyName){
+            return -1;
+        }else if(prev.currencyName > next.currencyName){
+            return 1;
+        }else{
+            return 0;
+        }
+    })
+
+    //append to the select option in the DOM
+    let currencyFrom = document.getElementById('currency-from');
+    let currencyTo = document.getElementById('currency-to');
+
+   return sortedCurrencies.map(currency => {
+        currencyFrom.innerHTML += `<option value="${currency.id}"> ${currency.id} - ${currency.currencyName}`;
+        currencyTo.innerHTML += `<option value="${currency.id}"> ${currency.id} - ${currency.currencyName}`;
+    })
+    
+
+}
