@@ -40,11 +40,19 @@
                 })
                 .then(allCurrencies => {
                     listCurrencies(allCurrencies);
-                    return allCurrencies;
+                    
                 });
 
               } else if(reg.active) {
+                  //If there is an activated worker, fetch the currency list from indexedDB
                 console.log('Service worker active');
+                return dbPromise.then(db => {
+                    return db.transaction('currencies').objectStore('currencies').getAll();
+                })
+                .then(allCurrencies => {
+                    listCurrencies(allCurrencies);
+
+                });
 
               }
         }).catch(function(error) {
@@ -92,7 +100,7 @@
         console.log('I\'ve been clicked');
       });
 
-
+// Function to store sort and list the  currency names
 let listCurrencies = (currencies) => {
     const sortedCurrencies = Array.from(currencies).sort((prev, next) => {
         if(prev.currencyName < next.currencyName){

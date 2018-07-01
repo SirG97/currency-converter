@@ -9,6 +9,7 @@ self.addEventListener('install', event => {
                 '/currency-converter/css/w3.css',
                 '/currency-converter/css/style.css',
                 '/currency-converter/app.js',
+                '/currency-converter/idb.js'
             ]);
         })
     );
